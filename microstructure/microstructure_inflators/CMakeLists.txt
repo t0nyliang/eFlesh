@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 3.2)
 project(Microstructures)
 
-# CMP0063: Honor visibility properties for all target types.
-if(POLICY CMP0063)
-    cmake_policy(SET CMP0063 NEW)
+# CMP0074: Honor visibility properties for all target types.
+if(POLICY CMP0074)
+    cmake_policy(SET CMP0074 NEW)
 endif()
 
 # Detects whether this is a top-level project

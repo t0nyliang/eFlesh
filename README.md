@@ -40,6 +40,10 @@ Please replace the path placeholders below to the correct local paths, during th
 ```
 cmake -DCMAKE_BUILD_TYPE=release .. -DTBB_ROOT=</path/to/oneTBB/installation> -DBoost_NO_SYSTEM_PATHS=ON -DBOOST_ROOT=</path/to/boost_1_83_0>
 ```
+            GIT_TAG        v2022.1.0
+If building on a Mac with Apple Silicon, you will need to build oneTBB from source for the arm64 chipset. 
+
+
 ```
 make -j4 stitch_cells_cli
 ```

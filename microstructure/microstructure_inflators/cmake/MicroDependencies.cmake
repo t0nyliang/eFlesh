@@ -42,11 +42,12 @@ endif()
 # While wjakob has been updated to TBB 2019 recently, it seems to hang Travis
 # at the linking stage for some reason, so we'll just use the upstream version
 # for now.
+
 if(NOT TARGET TBB::tbb)
-    micro_download_tbb()
-    list(APPEND CMAKE_MODULE_PATH ${MICRO_EXTERNAL}/tbb/cmake)
-    include(TBBBuild)
-    tbb_build(TBB_ROOT ${MICRO_EXTERNAL}/tbb CONFIG_DIR TBB_DIR)
+    # micro_download_tbb()
+    # list(APPEND CMAKE_MODULE_PATH ${MICRO_EXTERNAL}/tbb/cmake)
+    # include(TBBBuild)
+    # tbb_build(TBB_ROOT ${MICRO_EXTERNAL}/tbb CONFIG_DIR TBB_DIR)
     find_package(TBB REQUIRED tbb tbbmalloc)
     add_library(tbb_tbb INTERFACE)
     add_library(TBB::tbb ALIAS tbb_tbb)
@@ -61,8 +62,8 @@ if(NOT TARGET TBB::tbb)
     set(TBB_BUILD_TESTS OFF CACHE BOOL " " FORCE)
     set(TBB_NO_DATE ON CACHE BOOL " " FORCE)
 
-    micro_download_tbb()
-    add_subdirectory(${MICRO_EXTERNAL}/tbb tbb EXCLUDE_FROM_ALL)
+    # micro_download_tbb()
+    # add_subdirectory(${MICRO_EXTERNAL}/tbb tbb EXCLUDE_FROM_ALL)
     set_property(TARGET tbb_static tbb_def_files PROPERTY FOLDER "dependencies")
     set_target_properties(tbb_static PROPERTIES COMPILE_FLAGS "-Wno-implicit-fallthrough -Wno-missing-field-initializers -Wno-unused-parameter -Wno-keyword-macro")
 
