@@ -3,6 +3,20 @@
 
 [![Build Status](https://travis-ci.com/geometryprocessing/microstructures.svg?token=euzAY1sxC114E8ufzcZx&branch=master)](https://travis-ci.com/geometryprocessing/microstructures)
 
+## Quick Start
+
+To build the essential tools for eFlesh:
+
+```bash
+./build.sh
+```
+
+This will build `stitch_cells_cli`, `cut_cells_cli`, and `stack_cells` which are the main tools needed for eFlesh sensor generation.
+
+**Note**: The build system automatically handles TBB dependencies using the modern oneTBB library. If TBB is not found on your system, it will be downloaded and built automatically using CMake.
+
+## Dependencies
+
 Dependencies included directly or as submodules:
 
 - MeshFEM

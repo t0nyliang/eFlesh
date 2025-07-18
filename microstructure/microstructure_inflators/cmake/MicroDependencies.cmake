@@ -34,57 +34,58 @@ if (MICRO_WITH_OPENVDB)
     endif()
 endif()
 
-# TBB library; must be brought in before MeshFEM to override! We need tbbmalloc,
-# which MeshFEM chooses not to build.
-# There are also some segfaults on shutdown with TBB 2017 (the version in wjakob's
-# repository), so we need to use a more recent version of TBB.
-
-# While wjakob has been updated to TBB 2019 recently, it seems to hang Travis
-# at the linking stage for some reason, so we'll just use the upstream version
-# for now.
-
+# TBB library configuration
+# We need tbbmalloc which MeshFEM doesn't build by default
 if(NOT TARGET TBB::tbb)
-    # micro_download_tbb()
-    # list(APPEND CMAKE_MODULE_PATH ${MICRO_EXTERNAL}/tbb/cmake)
-    # include(TBBBuild)
-    # tbb_build(TBB_ROOT ${MICRO_EXTERNAL}/tbb CONFIG_DIR TBB_DIR)
-    find_package(TBB REQUIRED tbb tbbmalloc)
-    add_library(tbb_tbb INTERFACE)
-    add_library(TBB::tbb ALIAS tbb_tbb)
-    target_link_libraries(tbb_tbb INTERFACE TBB::tbb TBB::tbbmalloc)
+    # First try to find system TBB
+    find_package(TBB QUIET)
+    
+    if(TBB_FOUND)
+        # System TBB found, create interface target
+        add_library(tbb_tbb INTERFACE)
+        add_library(TBB::tbb ALIAS tbb_tbb)
+        target_link_libraries(tbb_tbb INTERFACE TBB::tbb)
+        
+        # Check if tbbmalloc is available
+        if(TARGET TBB::tbbmalloc)
+            target_link_libraries(tbb_tbb INTERFACE TBB::tbbmalloc)
+        endif()
+        
+        target_compile_definitions(tbb_tbb INTERFACE -DMICRO_WITH_TBB)
+        message(STATUS "Using system TBB")
+    else()
+        # System TBB not found, download and build from source
+        message(STATUS "System TBB not found, downloading and building from source")
+        micro_download_tbb()
+        
+        # Configure oneTBB build options for modern CMake build
+        set(TBB_TEST OFF CACHE BOOL "Build TBB tests" FORCE)
+        set(TBB_EXAMPLES OFF CACHE BOOL "Build TBB examples" FORCE)
+        set(TBB_BENCH OFF CACHE BOOL "Build TBB benchmarks" FORCE)
+        set(TBB_STRICT OFF CACHE BOOL "Use strict mode" FORCE)
+        set(TBB_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
+        set(TBB_CPF OFF CACHE BOOL "Build CPF" FORCE)
+        set(TBB_TBBMALLOC ON CACHE BOOL "Build tbbmalloc" FORCE)
+        set(TBB_TBBMALLOC_PROXY OFF CACHE BOOL "Build tbbmalloc_proxy" FORCE)
+        
+        # Add TBB subdirectory - oneTBB uses modern CMake
+        add_subdirectory(${MICRO_EXTERNAL}/tbb tbb EXCLUDE_FROM_ALL)
+        
+        # Create interface target using modern oneTBB targets
+        add_library(tbb_tbb INTERFACE)
+        add_library(TBB::tbb ALIAS tbb_tbb)
+        target_link_libraries(tbb_tbb INTERFACE TBB::tbb)
+        
+        # Check if tbbmalloc is available and link it
+        if(TARGET TBB::tbbmalloc)
+            target_link_libraries(tbb_tbb INTERFACE TBB::tbbmalloc)
+        endif()
+        
+        target_compile_definitions(tbb_tbb INTERFACE -DMICRO_WITH_TBB)
+        
+        message(STATUS "Built oneTBB from source")
+    endif()
 endif()
-
-if(NOT TARGET TBB::tbb)
-    set(TBB_BUILD_STATIC ON CACHE BOOL " " FORCE)
-    set(TBB_BUILD_SHARED OFF CACHE BOOL " " FORCE)
-    set(TBB_BUILD_TBBMALLOC ON CACHE BOOL " " FORCE)
-    set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL " " FORCE)
-    set(TBB_BUILD_TESTS OFF CACHE BOOL " " FORCE)
-    set(TBB_NO_DATE ON CACHE BOOL " " FORCE)
-
-    # micro_download_tbb()
-    # add_subdirectory(${MICRO_EXTERNAL}/tbb tbb EXCLUDE_FROM_ALL)
-    set_property(TARGET tbb_static tbb_def_files PROPERTY FOLDER "dependencies")
-    set_target_properties(tbb_static PROPERTIES COMPILE_FLAGS "-Wno-implicit-fallthrough -Wno-missing-field-initializers -Wno-unused-parameter -Wno-keyword-macro")
-
-    add_library(tbb_tbb INTERFACE)
-    target_include_directories(tbb_tbb SYSTEM INTERFACE ${MICRO_EXTERNAL}/tbb/include)
-    target_link_libraries(tbb_tbb INTERFACE tbb_static tbbmalloc_static)
-    add_library(TBB::tbb ALIAS tbb_tbb)
-
-    target_compile_definitions(tbb_tbb INTERFACE -DMICRO_WITH_TBB)
-
-    micro_target_hide_warnings(tbb_tbb tbb_static tbbmalloc_static)
-endif()
-
-# if(NOT TARGET micro::tbb)
-#     add_library(micro_tbb INTERFACE)
-#     if(MICRO_WITH_TBB)
-#         target_link_libraries(micro_tbb INTERFACE TBB::tbb)
-#         target_compile_definitions(micro_tbb INTERFACE -DMICRO_WITH_TBB)
-#     endif()
-#     add_library(micro::tbb ALIAS micro_tbb)
-# endif()
 
 # C++11 threads
 find_package(Threads REQUIRED) # provides Threads::Threads

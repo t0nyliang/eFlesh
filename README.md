@@ -30,18 +30,35 @@ conda env create -f env.yml
 
 ## Sensor Design
 
-To run the cut-cell microstructure optimizers and generate the lattice structures, there are some dependancies to be installed. Please use the following links provided and download [oneTBB](https://github.com/uxlfoundation/oneTBB/blob/master/INSTALL.md) and [BOOST](https://www.boost.org/users/history/version_1_83_0.html) from source.
+To run the cut-cell microstructure optimizers and generate the lattice structures, you need to build the microstructure_inflators tools. The build system will automatically handle TBB dependencies, but you may need to install Boost manually.
 
+### Prerequisites
+- **Boost 1.54+**: Install from [boost.org](https://www.boost.org/users/history/version_1_83_0.html) or use your system package manager
+- **TBB**: The build system will automatically download and build oneTBB if not found on your system (no manual installation required)
+
+### Building the Tools
+
+#### Option 1: Using the build script (Recommended)
+```
+cd eFlesh/microstructure/microstructure_inflators
+./build.sh
+```
+
+#### Option 2: Manual build
 ```
 cd eFlesh/microstructure/microstructure_inflators
 mkdir build && cd build
 ```
-Please replace the path placeholders below to the correct local paths, during the installation. 
+
+If you have Boost installed in a non-standard location, specify it:
 ```
-cmake -DCMAKE_BUILD_TYPE=release .. -DTBB_ROOT=</path/to/oneTBB/installation> -DBoost_NO_SYSTEM_PATHS=ON -DBOOST_ROOT=</path/to/boost_1_83_0>
+cmake -DCMAKE_BUILD_TYPE=release .. -DBoost_NO_SYSTEM_PATHS=ON -DBOOST_ROOT=/path/to/boost
 ```
-            GIT_TAG        v2022.1.0
-If building on a Mac with Apple Silicon, you will need to build oneTBB from source for the arm64 chipset. 
+
+Otherwise, simply run:
+```
+cmake -DCMAKE_BUILD_TYPE=release ..
+``` 
 
 
 ```
