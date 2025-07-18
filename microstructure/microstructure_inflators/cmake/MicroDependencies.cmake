@@ -34,8 +34,14 @@ if (MICRO_WITH_OPENVDB)
     endif()
 endif()
 
-# TBB library configuration
+# TBB library configuration - must be first to avoid version conflicts
 # We need tbbmalloc which MeshFEM doesn't build by default
+
+# Clear any existing TBB variables to avoid conflicts
+unset(TBB_FOUND CACHE)
+unset(TBB_INCLUDE_DIRS CACHE)
+unset(TBB_LIBRARIES CACHE)
+
 if(NOT TARGET TBB::tbb)
     # First try to find system TBB
     find_package(TBB QUIET)
@@ -87,6 +93,11 @@ if(NOT TARGET TBB::tbb)
     endif()
 endif()
 
+# Ensure TBB is available for other packages
+if(NOT TARGET TBB::tbb)
+    message(FATAL_ERROR "TBB configuration failed")
+endif()
+
 # C++11 threads
 find_package(Threads REQUIRED) # provides Threads::Threads
 
@@ -133,10 +144,13 @@ if(MICRO_BUILD_BINARIES)
  endif()
 endif()
 
-# CGAL library
+# CGAL library - must be after TBB is configured
 if(NOT TARGET CGAL::CGAL)
     micro_download_cgal()
     set(CGAL_DIR ${MICRO_EXTERNAL}/cgal)
+    # Disable TBB in CGAL to avoid version conflicts
+    set(CGAL_USE_TBB OFF CACHE BOOL "Use TBB in CGAL" FORCE)
+    set(CGAL_USE_TBB_STATIC OFF CACHE BOOL "Use static TBB in CGAL" FORCE)
     find_package(CGAL CONFIG REQUIRED COMPONENTS PATHS ${CGAL_DIR} NO_DEFAULT_PATH)
 endif()
 

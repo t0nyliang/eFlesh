@@ -30,7 +30,7 @@ conda env create -f env.yml
 
 ## Sensor Design
 
-To run the cut-cell microstructure optimizers and generate the lattice structures, you need to build the microstructure_inflators tools. The build system will automatically handle TBB dependencies, but you may need to install Boost manually.
+gTo run the cut-cell microstructure optimizers and generate the lattice structures, you need to build the microstructure_inflators tools. The build system will automatically handle TBB dependencies, but you may need to install Boost manually.
 
 ### Prerequisites
 - **Boost 1.54+**: Install from [boost.org](https://www.boost.org/users/history/version_1_83_0.html) or use your system package manager
