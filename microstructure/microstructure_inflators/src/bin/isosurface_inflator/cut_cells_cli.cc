@@ -129,7 +129,13 @@ int main(int argc, char * argv[]) {
 
     const double bg_val = 3.0 / resolution;
 
-    FloatGrid::Ptr surf_grid = mesh2sdf(args.object_surface, args.gridSize / (resolution - 1));
+    // Guard: only call mesh2sdf when a surface path was provided.
+    // Calling it with an empty path causes igl::readOBJ to return empty
+    // matrices, which then crashes in Eigen::maxCoeff on an empty vector.
+    FloatGrid::Ptr surf_grid;
+    if (!args.object_surface.empty()) {
+        surf_grid = mesh2sdf(args.object_surface, args.gridSize / (resolution - 1));
+    }
 
     /* create sdf for internal microstructure cells */
 
@@ -229,7 +235,9 @@ int main(int argc, char * argv[]) {
         std::cout << "Completed " << ((++cur) * 100.0) / material_patterns.size() << " %\n";
     }
 
-    openvdb::tools::csgIntersection(*grid, *surf_grid);
+    if (surf_grid) {
+        openvdb::tools::csgIntersection(*grid, *surf_grid);
+    }
 
     /* create tunnels to remove internal materials after 3d printing */
     
