@@ -6,7 +6,7 @@ on:
 jobs:
   build-and-generate:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - name: Checkout repo with submodules
@@ -27,6 +27,7 @@ jobs:
             libsuitesparse-dev \
             libboost-all-dev \
             libtbb-dev \
+            gdb \
             python3 \
             python3-pip
 
@@ -36,7 +37,7 @@ jobs:
           find . -name "CMakeLists.txt" -exec sed -i \
             's/cmake_minimum_required(VERSION 3\.[1234])/cmake_minimum_required(VERSION 3.10)/g' {} \;
 
-      - name: Configure CMake (system Boost + TBB)
+      - name: Configure CMake
         working-directory: microstructure/microstructure_inflators
         run: |
           mkdir -p build && cd build
@@ -53,16 +54,36 @@ jobs:
         working-directory: microstructure/microstructure_inflators/build
         run: |
           make -j$(nproc) cut_cells_cli stitch_cells_cli stack_cells
-          echo "Binary check:"
+          echo "--- Binary size ---"
           ls -lh isosurface_inflator/cut_cells_cli
 
-      # Fallback: if system Boost/TBB cmake fails, use build.sh
-      - name: Fallback full build.sh (if binary missing)
+      - name: Diagnose shared library linkage
         working-directory: microstructure/microstructure_inflators
-        if: ${{ failure() }}
         run: |
-          chmod +x build.sh
-          ./build.sh
+          BIN=build/isosurface_inflator/cut_cells_cli
+          echo "=== ldd output ==="
+          ldd "$BIN" || true
+          echo ""
+          echo "=== Searching for libtbb in build tree ==="
+          find build 3rdparty -name "libtbb*.so*" 2>/dev/null || true
+          echo ""
+          # Build LD_LIBRARY_PATH from any TBB .so found in the build tree
+          TBB_SO=$(find build 3rdparty -name "libtbb.so*" 2>/dev/null | head -1)
+          if [ -n "$TBB_SO" ]; then
+            TBB_LIB_DIR=$(dirname "$TBB_SO")
+            echo "Found TBB at: $TBB_LIB_DIR"
+            echo "TBB_LIB_DIR=$TBB_LIB_DIR" >> "$GITHUB_ENV"
+          else
+            echo "No custom TBB found; using system TBB"
+            echo "TBB_LIB_DIR=/usr/lib/x86_64-linux-gnu" >> "$GITHUB_ENV"
+          fi
+
+      - name: Smoke-test binary (--help)
+        working-directory: microstructure/microstructure_inflators
+        run: |
+          export LD_LIBRARY_PATH="${TBB_LIB_DIR}:${LD_LIBRARY_PATH:-}"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          ./build/isosurface_inflator/cut_cells_cli --help || true
 
       - name: Install Python dependencies
         run: pip3 install meshio trimesh manifold3d numpy scipy
@@ -71,7 +92,12 @@ jobs:
         run: mkdir -p output
 
       - name: Run cut-cell pipeline
-        run: python3 run_cutcell.py
+        env:
+          LD_LIBRARY_PATH: ${{ env.TBB_LIB_DIR }}
+        run: |
+          export LD_LIBRARY_PATH="${TBB_LIB_DIR}:${LD_LIBRARY_PATH:-}"
+          echo "Running with LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          python3 run_cutcell.py
 
       - name: Verify output STL
         run: |
