@@ -1,0 +1,19 @@
+=== ORCASTLICER SETTINGS FOR EFLESH FOREARM PAD v8 ===
+File: forearm_lattice_v8.stl
+Geometry: 30.0 x 30.0 x 14.05mm  (1mm base + 13mm lattice)
+
+Material: TPU 95A
+Nozzle: 0.4mm
+Layer height: 0.2mm
+First layer height: 0.25mm
+Print speed: 20mm/s
+Bed temperature: 45C / Nozzle: 220-230C
+Brim: 10mm / Supports: None / Retraction: 0.5-1mm
+
+PAUSE AT LAYER: 37  (printed Z = 7.45mm)
+  Pocket opens at Z = 7.5mm
+
+MAGNET INSERTION:
+  4 x N52, 4.8mm dia x 1.6mm thick
+  X = [6.0, 12.0, 18.0, 24.0]mm, Y = 15.0mm
+  Polarity L-R: N S N S

@@ -1,14 +1,15 @@
-# 30x30x15mm rectangular box for eFlesh forearm lattice
+﻿# 29.6x29.6x15mm rectangular box for eFlesh forearm lattice
+# Fits 30x30mm housing cavity with 0.2mm clearance each side (0.2mm per side)
 # 8 vertices, 12 triangulated faces, outward-facing normals
 
 v 0 0 0
-v 30 0 0
-v 30 30 0
-v 0 30 0
+v 29.6 0 0
+v 29.6 29.6 0
+v 0 29.6 0
 v 0 0 15
-v 30 0 15
-v 30 30 15
-v 0 30 15
+v 29.6 0 15
+v 29.6 29.6 15
+v 0 29.6 15
 
 # Bottom (Z=0, normal -Z)
 f 1 3 2
@@ -19,12 +20,12 @@ f 6 7 8
 # Front (Y=0, normal -Y)
 f 1 2 6
 f 1 6 5
-# Back (Y=30, normal +Y)
+# Back (Y=29.6, normal +Y)
 f 3 4 8
 f 3 8 7
 # Left (X=0, normal -X)
 f 1 5 8
 f 1 8 4
-# Right (X=30, normal +X)
+# Right (X=29.6, normal +X)
 f 2 3 7
 f 2 7 6
